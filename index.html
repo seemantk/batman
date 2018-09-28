@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <title>InfoBat</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: yellow;
+    }
+    h2,h3,h4 {
+      margin-bottom: 0;
+    }
+    h2,h3 {
+      margin-top: 0;
+    }
+    svg {
+      height: 80%;
+    }
+    .name {
+      text-transform: uppercase;
+      font-variant: small-caps;
+    }
+    .medium {
+      text-transform: uppercase;
+    }
+    .comment {
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="batsymbols">
+    <svg width="900" height="477" viewBox="0 0 150 80">
+      <path id="bat"></path>
+    </svg>
+    <h2><span class="name"></span> (<span class="year"></span>)</h2>
+    <h4><span class="medium"></span>: <span class="location"></span> <span class="comment"></span></h4>
+  </div><!--.batsymbols-->
+
+<script src="js/d3.min.js"></script>
+<script>
+  d3.tsv("data/sigils.tsv", ingest)
+      .then(mainfn)
+  ;
+  function ingest(row) {
+      row.year = row.year || row.id.split('-')[0];
+      return row;
+  } // ingest()
+
+  function mainfn(sigils) {
+      var logos = d3.map({})
+        , paths = []
+      ;
+      d3.xml("data/batman-logos.svg")
+          .then(function(xml) {
+              Array.from(xml.getElementsByTagName('path')).reverse()
+                  .forEach(function(d) {
+                      logos.set([d.getAttribute('id')], d.getAttribute('d'));
+                    })
+
+              ;
+              d3.select("path#bat")
+                  .call(animate)
+              ;
+            })
+      ;
+
+      var duration = 2500
+        , ease = d3.easeQuad
+      ;
+
+      function animate(sel) {
+          var start = sigils.shift()
+            , end = sigils[0];
+          sigils.push(start);
+
+          d3.selectAll(".name, .year, .medium, .location, .comment")
+              .call(crossfade)
+          ;
+          sel.datum({start, end})
+            .transition()
+              .duration(duration)
+              .ease(ease)
+              .attrTween("d", function(d) {
+                  return d3.interpolate(logos.get(d.start.id), logos.get(d.end.id));
+                })
+              .on("end", function() { sel.call(animate); })
+          ;
+
+
+          function crossfade(sel) {
+              sel
+                .transition()
+                  .delay(duration)
+                  .each(function() {
+                      d3.select(this)
+                          .text(function() { return end[this.className]; })
+                      ;
+                    })
+              ;
+          } // crossfade()
+      } // animate()
+
+  } // mainfn()
+</script>
