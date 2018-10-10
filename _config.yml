@@ -1,4 +1,4 @@
 title: Batman symbols over time
 author: Seemant Kulleen
 
-exclude: [gists,source]
+exclude: [_gists,source,bower_components,node_modules,Gemfile,Gemfile.lock,package-lock.json]
