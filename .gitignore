@@ -3,6 +3,6 @@ _site/
 .sass-cache/
 .jekyll-cache/
 .jekyll-metadata
-gists/
+_gists/
 bower_components/
 node_modules/
